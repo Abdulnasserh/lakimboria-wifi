@@ -1,63 +1,95 @@
 # Lakimboria WiFi Manager
 
-Hotspot management system for Tanzania — MikroTik voucher management with TZS currency and Swahili language support. Created by Deeplearn Technologies.
+MikroTik hotspot management for Tanzania — TZS currency, Swahili language, voucher generation, sales reports.
 
-**Stack:**
-- **Mikhmon** — PHP web app for managing hotspot users, vouchers, and sales
-- **Custom hotspot pages** — Captive portal login page (English/Swahili)
+Created by **Deeplearn Technologies**.
 
-## Quick Start
+---
 
-### 1. On your MikroTik Router (via SSH/Terminal)
+## Quick Install
+
+### 1. Install Dashboard (one command)
+
+**Windows (PowerShell Admin):**
+```powershell
+irm https://raw.githubusercontent.com/Abdulnasserh/lakimboria-wifi/main/install.ps1 | iex
+```
+
+**macOS / Linux:**
+```bash
+curl -sSL https://raw.githubusercontent.com/Abdulnasserh/lakimboria-wifi/main/install.sh | bash
+```
+
+Opens at **http://localhost:8080** — Login: `mikhmon` / `1234`
+
+### 2. Install on MikroTik Router (one command)
+
+SSH into your MikroTik and run:
 
 ```rsc
-/tool fetch url="https://raw.githubusercontent.com/YOUR_USER/mikhmon-tz/main/install.rsc" dst-path=install.rsc
+/tool fetch url="https://raw.githubusercontent.com/Abdulnasserh/lakimboria-wifi/main/install.rsc" dst-path=install.rsc
 /import install.rsc
 ```
 
-This enables API, configures hotspot, and downloads the captive portal.
+This enables API, sets up hotspot, and downloads the captive portal pages.
 
-### 2. On your PC
+### 3. Connect Dashboard to Router
 
-**Windows:** Double-click `setup-windows.bat`  
-**macOS/Linux:** `chmod +x setup-macos.sh && ./setup-macos.sh`
+In Lakimboria: **Settings → Add Router** → Enter MikroTik IP, username, password → Set currency to `TZS`
 
-### 3. Login
+---
 
-Open http://localhost:8080 — Login: `mikhmon` / `1234`
+## Download Windows App
 
-### 4. Add Router
+Download the **Lakimboria WiFi Manager** desktop app from the [Releases page](https://github.com/Abdulnasserh/lakimboria-wifi/releases).  
+Double-click to start/stop the server with a simple GUI — no terminal needed.
 
-In Lakimboria: Settings → Add Router → Enter your MikroTik IP, user, password → Set currency to `TZS`
+---
 
 ## Manual Setup
 
-### Install PHP
+### Requirements
 
-**macOS (Homebrew):** `brew install php`  
-**Windows:** Download from https://windows.php.net/download/  
-**Ubuntu:** `sudo apt install php-cli php-mbstring`
+- **PHP 8.0+** with CLI and mbstring
+- **MikroTik RouterOS** 6.x / 7.x with hotspot configured
 
-### Run Mikhmon
+### Run without installer
 
 ```bash
-cd mikhmon
+git clone https://github.com/Abdulnasserh/lakimboria-wifi.git
+cd lakimboria-wifi/mikhmon
 php -S 0.0.0.0:8080
 ```
 
-### Install hotspot pages on MikroTik
+### Upload hotspot pages manually
 
-Upload the `hotspot/` folder contents to your MikroTik via WinBox (Files → hotspot/).
+Upload `hotspot/` folder contents to MikroTik via WinBox (Files → hotspot/).
+
+---
 
 ## Features
 
-- TZS currency support (Tanzania Shilling)
-- Swahili language (Kiswahili)
-- English language
-- Voucher generation (username+password or single code)
-- User management
-- Sales reports
-- Live income tracking
+- TZS currency (Tanzania Shilling)
+- Swahili (Kiswahili) and English language
+- Voucher generation (user/pass or single code)
+- User management with profiles
+- Sales reports with live income tracking
 - Multi-router support
 - Voucher printing (thermal, standard, QR)
 - WhatsApp sharing
+- Voucher editor
+
+---
+
+## Stack
+
+- **PHP backend** — Mikhmon V3 (hotspot monitor)
+- **Captive portal** — Custom HTML/JS hotspot pages
+- **MikroTik API** — routeros-api class
+
+---
+
+## License
+
+GPLv2 — Original Mikhmon by Laksamadi Guko  
+Tanzania Edition © 2025 Deeplearn Technologies

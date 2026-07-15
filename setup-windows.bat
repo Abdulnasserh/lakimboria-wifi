@@ -7,6 +7,11 @@ echo   Lakimboria WiFi Manager
 echo   Powered by Mikhmon — Windows Setup
 echo =========================================
 echo.
+echo  TIP: Download the GUI app from:
+echo  https://github.com/Abdulnasserh/lakimboria-wifi/releases
+echo  Double-click to start/stop the server easily.
+echo =========================================
+echo.
 
 :: Check if PHP is installed
 where php >nul 2>nul

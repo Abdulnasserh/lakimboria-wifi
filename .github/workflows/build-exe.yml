@@ -1,0 +1,43 @@
+name: Build Lakimboria Manager .exe
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "manager/lakimboria-manager.ps1"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install ps2exe module
+        run: Install-Module -Name ps2exe -Force -Scope CurrentUser
+
+      - name: Compile .ps1 to .exe
+        run: |
+          ps2exe -inputFile manager/lakimboria-manager.ps1 `
+                 -outputFile LakimboriaWiFiManager.exe `
+                 -iconFile manager/icon.ico `
+                 -title "Lakimboria WiFi Manager" `
+                 -description "Lakimboria WiFi Manager — MikroTik Hotspot Dashboard Launcher" `
+                 -company "Deeplearn Technologies" `
+                 -product "Lakimboria WiFi Manager" `
+                 -version "1.0.0.0"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LakimboriaWiFiManager
+          path: LakimboriaWiFiManager.exe
+
+      - name: Upload to Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: LakimboriaWiFiManager.exe
+          fail_on_unmatched: true

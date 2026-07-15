@@ -3,7 +3,7 @@
 # Or paste directly into Terminal/SSH
 
 # !!! REPLACE YOUR_USER with your GitHub username before running !!!
-:local GITHUB "https://raw.githubusercontent.com/YOUR_USER/mikhmon-tz/main"
+:local GITHUB "https://raw.githubusercontent.com/Abdulnasserh/lakimboria-wifi/main"
 :local IFACE "ether2"
 :local SERVERNAME "hotspot"
 :local LAKIMBORIAURL "http://192.168.1.100:8080"

@@ -13,6 +13,9 @@ echo -e "${CYAN}  Lakimboria WiFi Manager${NC}"
 echo -e "${CYAN}  Powered by Mikhmon — macOS/Linux Setup${NC}"
 echo -e "${CYAN}=========================================${NC}"
 echo ""
+echo -e "  ${YELLOW}TIP:${NC} macOS users can download the Mac app from:"
+echo -e "  ${CYAN}https://github.com/Abdulnasserh/lakimboria-wifi/releases${NC}"
+echo ""
 
 # Check PHP
 if ! command -v php &>/dev/null; then

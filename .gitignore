@@ -5,9 +5,17 @@ Thumbs.db
 # PHP
 *.log
 
+# Build artifacts
+*.exe
+*.zip
+manager/*.exe
+
 # Mikhmon runtime
 mikhmon/include/config.php
 mikhmon/include/lang.php
 mikhmon/include/theme.php
 mikhmon/voucher/temp.php
 mikhmon/img/logo-*.png
+
+# PHP local install
+php/
