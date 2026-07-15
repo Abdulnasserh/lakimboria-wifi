@@ -1,15 +1,13 @@
-# Lakimboria WiFi Manager — Auto Installer
+# Lakimboria WiFi Manager — Auto Installer for MikroTik
 # Run on MikroTik via: /import install.rsc
 # Or paste directly into Terminal/SSH
 
-# !!! REPLACE YOUR_USER with your GitHub username before running !!!
 :local GITHUB "https://raw.githubusercontent.com/Abdulnasserh/lakimboria-wifi/main"
-:local IFACE "ether2"
 :local SERVERNAME "hotspot"
 :local LAKIMBORIAURL "http://192.168.1.100:8080"
 
 :put "========================================="
-:put "  Lakimboria WiFi Manager"
+:put "  Lakimboria WiFi Manager Installer"
 :put "========================================="
 :put ""
 
@@ -19,17 +17,16 @@
 /ip service set api-ssl disabled=no
 :put "  API enabled on port 8728"
 
-# ---- 2. Enable hotspot on interface ----
-:put "[2] Setting up hotspot on $IFACE..."
-/ip hotspot add interface=$IFACE name=$SERVERNAME disabled=no
+# ---- 2. Create directory structure ----
+:put "[2] Creating directory structure..."
+# RouterOS doesn't have a mkdir command, so we create dummy files to force folder creation
+/file print file="hotspot/css/dummy"
+/file print file="hotspot/img/dummy"
+/file print file="hotspot/xml/dummy"
+:delay 1s
 
-# ---- 3. Configure hotspot profile ----
-:put "[3] Configuring hotspot profile..."
-/ip hotspot profile set [find] dns-name="$SERVERNAME.local" html-directory=hotspot
-:put "  DNS name: $SERVERNAME.local"
-
-# ---- 4. Download custom hotspot pages ----
-:put "[4] Downloading custom hotspot pages..."
+# ---- 3. Download captive portal files ----
+:put "[3] Downloading captive portal files..."
 
 :local FILES {
     "login.html"
@@ -47,57 +44,52 @@
     "favicon.ico"
 }
 
-:local DIR "hotspot"
-
 :foreach FILE in=$FILES do={
     :put "  Downloading $FILE..."
-    /tool fetch url="$GITHUB/hotspot/$FILE" dst-path="$DIR/$FILE"
+    /tool fetch url="$GITHUB/hotspot/$FILE" dst-path="hotspot/$FILE"
 }
 
-:put ""
-
-# ---- 5. Download CSS ----
+# Download CSS
 :put "  Downloading CSS..."
 /tool fetch url="$GITHUB/hotspot/css/style.css" dst-path="hotspot/css/style.css"
 
-# ---- 6. Download images ----
-:put "  Downloading images..."
-/tool fetch url="$GITHUB/hotspot/img/bg.jpeg" dst-path="hotspot/img/bg.jpeg"
-/tool fetch url="$GITHUB/hotspot/img/bg1.jpeg" dst-path="hotspot/img/bg1.jpeg"
-/tool fetch url="$GITHUB/hotspot/img/bg2.jpeg" dst-path="hotspot/img/bg2.jpeg"
-/tool fetch url="$GITHUB/hotspot/img/bg3.jpeg" dst-path="hotspot/img/bg3.jpeg"
+# Download SVGs
+:put "  Downloading icons..."
+/tool fetch url="$GITHUB/hotspot/img/user.svg" dst-path="hotspot/img/user.svg"
+/tool fetch url="$GITHUB/hotspot/img/password.svg" dst-path="hotspot/img/password.svg"
+/tool fetch url="$GITHUB/hotspot/img/voucher.svg" dst-path="hotspot/img/voucher.svg"
 
-# ---- 7. Update conf.js with Mikhmon URL ----
-:put "[5] Updating conf.js..."
-:local CONF [/file get hotspot/conf.js contents]
-:local NEWCONF [:toarray ""]
-:foreach LINE in=$CONF do={
-    :if ([:pick $LINE 0 5] = "url :") do={
-        :set NEWCONF ($NEWCONF . "url : \"$LAKIMBORIAURL\",\n")
-    } else={
-        :set NEWCONF ($NEWCONF . $LINE . "\n")
-    }
+# Clean up dummy files
+/file remove "hotspot/css/dummy.txt"
+/file remove "hotspot/img/dummy.txt"
+/file remove "hotspot/xml/dummy.txt"
+
+# ---- 4. Configure hotspot profile ----
+:put "[4] Applying captive portal to hotspot profile..."
+# Check if profile exists, if so modify, otherwise warn
+:local PROFILE [ /ip hotspot profile find where name="default" or dns-name="$SERVERNAME.local" ]
+:if ([:len $PROFILE] > 0) do={
+    /ip hotspot profile set $PROFILE dns-name="$SERVERNAME.local" html-directory=hotspot
+    :put "  Hotspot profile updated to use Lakimboria pages."
+} else={
+    :put "  WARNING: No hotspot profile found. Please run IP -> Hotspot -> Hotspot Setup first, then run this script again."
 }
-/file set hotspot/conf.js contents=$NEWCONF
 
-# ---- 8. Create default admin user ----
-:put "[6] Creating admin bypass user..."
-/ip hotspot user add name=admin password=admin profile=default comment=admin-bypass
+# ---- 5. Update conf.js with Lakimboria URL ----
+:put "[5] Setting Lakimboria Server URL in conf.js..."
+/file set "hotspot/conf.js" contents="var config = {\r\n  loginvc : \"Weka Kodi ya Vocha kisha bonyeza Unganisha.\",\r\n  loginup : \"Weka Jina la Mtumiaji na Nywila kisha bonyeza Unganisha.\",\r\n  voucherCode : \"Kodi ya Vocha\",\r\n  setCase : \"none\",\r\n  defaultMode : \"voucher\",\r\n  theme : \"default\",\r\n  url : \"$LAKIMBORIAURL\",\r\n  SessionName : \"hotspot\",\r\n}\r\n"
 
-# ---- 9. Display summary ----
+# ---- 6. Display summary ----
 :put ""
 :put "========================================="
 :put "  INSTALLATION COMPLETE!"
 :put "========================================="
-:put "  Interface      : $IFACE"
 :put "  Server Name    : $SERVERNAME"
 :put "  Lakimboria URL : $LAKIMBORIAURL"
-:put "  Admin User     : admin / admin"
 :put ""
 :put "  WHAT TO DO NEXT:"
 :put "  1. On your PC: run setup-windows.bat or setup-macos.sh"
 :put "  2. Open http://localhost:8080 in browser"
 :put "  3. Login with: mikhmon / 1234"
-:put "  4. Add this router (IP: $IP, user: admin, pass: your-password)"
-:put "  5. Set currency to TZS in Settings"
+:put "  4. Add this router in Settings"
 :put "========================================="
