@@ -65,15 +65,9 @@
 /file remove "hotspot/xml/dummy.txt"
 
 # ---- 4. Configure hotspot profile ----
-:put "[4] Applying captive portal to hotspot profile..."
-# Check if profile exists, if so modify, otherwise warn
-:local PROFILE [ /ip hotspot profile find where name="default" or dns-name="$SERVERNAME.local" ]
-:if ([:len $PROFILE] > 0) do={
-    /ip hotspot profile set $PROFILE dns-name="$SERVERNAME.local" html-directory=hotspot
-    :put "  Hotspot profile updated to use Lakimboria pages."
-} else={
-    :put "  WARNING: No hotspot profile found. Please run IP -> Hotspot -> Hotspot Setup first, then run this script again."
-}
+:put "[4] Applying captive portal to all hotspot profiles..."
+/ip hotspot profile set [find] html-directory=hotspot
+:put "  All Hotspot profiles updated to use Lakimboria pages."
 
 # ---- 5. Update conf.js with Lakimboria URL ----
 :put "[5] Setting Lakimboria Server URL in conf.js..."
