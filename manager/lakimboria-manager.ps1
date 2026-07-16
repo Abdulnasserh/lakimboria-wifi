@@ -17,6 +17,19 @@ $form.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon((Get-Command powershel
 $form.FormBorderStyle = "FixedSingle"
 $form.MaximizeBox = $false
 
+# System Tray Icon Setup
+$notifyIcon = New-Object System.Windows.Forms.NotifyIcon
+$notifyIcon.Icon = $form.Icon
+$notifyIcon.Text = "Lakimboria WiFi Manager"
+$notifyIcon.Visible = $false
+
+$contextMenu = New-Object System.Windows.Forms.ContextMenu
+$menuShow = New-Object System.Windows.Forms.MenuItem("Show Manager")
+$menuStop = New-Object System.Windows.Forms.MenuItem("Stop Server")
+$menuExit = New-Object System.Windows.Forms.MenuItem("Exit")
+$contextMenu.MenuItems.AddRange(@($menuShow, $menuStop, $menuExit))
+$notifyIcon.ContextMenu = $contextMenu
+
 $title = New-Object System.Windows.Forms.Label
 $title.Text = "Lakimboria WiFi Manager"
 $title.Font = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
@@ -88,9 +101,9 @@ $logBox.ForeColor = "Lime"
 $form.Controls.Add($logBox)
 
 $loginLabel = New-Object System.Windows.Forms.Label
-$loginLabel.Text = "Login: mikhmon / 1234"
+$loginLabel.Text = "Login: mikhmon / 1234  |  Created by Deeplearn Technologies"
 $loginLabel.Font = New-Object System.Drawing.Font("Segoe UI", 8)
-$loginLabel.Size = New-Object System.Drawing.Size(200, 15)
+$loginLabel.Size = New-Object System.Drawing.Size(400, 15)
 $loginLabel.Location = New-Object System.Drawing.Point(20, 340)
 $form.Controls.Add($loginLabel)
 
@@ -190,18 +203,67 @@ function Stop-Server {
 $startBtn.Add_Click({ Start-Server })
 $stopBtn.Add_Click({ Stop-Server })
 $openBtn.Add_Click({ Start-Process "http://localhost:$serverPort" })
-
 $urlLabel.Add_Click({ Start-Process "http://localhost:$serverPort" })
+
+# Form events
+$form.Add_Resize({
+    if ($form.WindowState -eq "Minimized") {
+        $form.Hide()
+        $notifyIcon.Visible = $true
+        $notifyIcon.ShowBalloonTip(1000, "Lakimboria WiFi Manager", "App is running in system tray.", [System.Windows.Forms.ToolTipIcon]::Info)
+    }
+})
+
+$menuShow.Add_Click({
+    $form.Show()
+    $form.WindowState = "Normal"
+    $notifyIcon.Visible = $false
+})
+
+$menuStop.Add_Click({ Stop-Server })
+
+$menuExit.Add_Click({
+    Stop-Server
+    $notifyIcon.Dispose()
+    $form.Close()
+})
+
+$notifyIcon.Add_DoubleClick({
+    $form.Show()
+    $form.WindowState = "Normal"
+    $notifyIcon.Visible = $false
+})
 
 $form.Add_FormClosing({
     param($sender, $e)
     if ($global:process -and -not $global:process.HasExited) {
         $result = [System.Windows.Forms.MessageBox]::Show("Server is still running. Stop it before closing?", "Server Running", "YesNo", "Warning")
-        if ($result -eq "Yes") { Stop-Server }
+        if ($result -eq "Yes") { 
+            Stop-Server 
+            $notifyIcon.Dispose()
+        } else {
+            $e.Cancel = $true
+            $form.Hide()
+            $notifyIcon.Visible = $true
+        }
+    } else {
+        $notifyIcon.Dispose()
+    }
+})
+
+# Auto-start on launch
+$form.Add_Shown({
+    Start-Server
+    if ($global:process -and -not $global:process.HasExited) {
+        Start-Process "http://localhost:$serverPort"
+        # Optional: Auto minimize to tray on startup
+        Start-Sleep -Seconds 1
+        $form.Hide()
+        $notifyIcon.Visible = $true
     }
 })
 
 Write-Log "Lakimboria WiFi Manager v1.0"
-Write-Log "Ready. Click Start Server to begin."
+Write-Log "Initializing automatic server startup..."
 
 [void]$form.ShowDialog()
