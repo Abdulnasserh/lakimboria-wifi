@@ -15,6 +15,11 @@ Write-Host ""
 
 # --- 1. Download and Extract Repository ---
 Write-Host "[1/4] Downloading Lakimboria files..." -ForegroundColor Yellow
+
+# Kill any locked running processes first to prevent directory deletion errors
+Stop-Process -Name "php" -Force -ErrorAction SilentlyContinue
+Stop-Process -Name "LakimboriaWiFiManager" -Force -ErrorAction SilentlyContinue
+
 if (Test-Path $dir) {
     Write-Host "  Existing folder found. Cleaning up for fresh install..." -ForegroundColor DarkGray
     Remove-Item $dir -Recurse -Force -ErrorAction SilentlyContinue
@@ -66,9 +71,11 @@ try {
     Write-Host "  Successfully compiled LakimboriaWiFiManager.exe!" -ForegroundColor Green
 } catch {
     Write-Host "  Compilation warning: $_" -ForegroundColor Red
-    Write-Host "  Falling back: Copying pre-compiled loader if available, or creating simple batch launcher..." -ForegroundColor DarkGray
-    # Fallback to copy the script if compiling fails
-    Copy-Item "$dir\manager\lakimboria-manager.ps1" "$dir\LakimboriaWiFiManager.ps1" -Force
+    Write-Host "  Falling back: Creating a double-clickable .bat launcher..." -ForegroundColor DarkGray
+    
+    # Create fallback .bat file which runs powershell silently in the background
+    $batContent = "@echo off`r`nstart /B powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File `"%~dp0manager\lakimboria-manager.ps1`""
+    $batContent | Out-File "$dir\LakimboriaWiFiManager.bat" -Encoding ASCII
 }
 
 # --- 4. Create Desktop Shortcut ---
@@ -80,9 +87,8 @@ if (Test-Path "$dir\LakimboriaWiFiManager.exe") {
     $shortcut.TargetPath = "$dir\LakimboriaWiFiManager.exe"
     $shortcut.WorkingDirectory = $dir
 } else {
-    # If compilation failed, create a shortcut to start via powershell
-    $shortcut.TargetPath = "powershell.exe"
-    $shortcut.Arguments = "-ExecutionPolicy Bypass -File `"$dir\manager\lakimboria-manager.ps1`""
+    # If compilation failed, point to the fallback .bat file
+    $shortcut.TargetPath = "$dir\LakimboriaWiFiManager.bat"
     $shortcut.WorkingDirectory = $dir
 }
 
