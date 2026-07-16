@@ -42,10 +42,15 @@ Write-Host "  Portable PHP extracted inside the project directory." -ForegroundC
 # --- 3. Compile the Desktop App Launcher (.exe) ---
 Write-Host "[3/4] Compiling the Lakimboria Manager App (.exe)..." -ForegroundColor Yellow
 try {
+    # Set TLS 1.2, set NuGet, and trust PSGallery to prevent any interactive prompt hangs
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -ErrorAction SilentlyContinue | Out-Null
+    Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted -ErrorAction SilentlyContinue | Out-Null
+
     # Install ps2exe if not available
     if (-not (Get-Module -ListAvailable -Name ps2exe)) {
         Write-Host "  Installing PS2EXE compiler module (takes a moment)..." -ForegroundColor DarkGray
-        Install-Module -Name ps2exe -Force -Scope CurrentUser -AllowClobber | Out-Null
+        Install-Module -Name ps2exe -Force -Scope CurrentUser -AllowClobber -Confirm:$false | Out-Null
     }
     
     # Run the compilation
