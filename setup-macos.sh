@@ -42,7 +42,7 @@ echo -e "${GREEN}[2] Starting Lakimboria server...${NC}"
 
 # Start PHP server in background
 cd "$DIR/mikhmon"
-php -S 0.0.0.0:8080 > /tmp/lakimboria-server.log 2>&1 &
+php -S 0.0.0.0:8081 > /tmp/lakimboria-server.log 2>&1 &
 SERVER_PID=$!
 cd "$DIR"
 
@@ -51,15 +51,15 @@ echo -e "${GREEN}[3] Server started (PID: $SERVER_PID)${NC}"
 # Open browser
 sleep 2
 if command -v open &>/dev/null; then
-    open http://localhost:8080
-elif command -v xdg-open &>/dev/null; then
-    xdg-open http://localhost:8080
+    open http://localhost:8081
+  elif command -v xdg-open &>/dev/null; then
+    xdg-open http://localhost:8081
 fi
 
 echo ""
 echo -e "${CYAN}=========================================${NC}"
 echo -e "${GREEN}  Lakimboria WiFi Manager is running at:${NC}"
-echo -e "${GREEN}  http://localhost:8080${NC}"
+echo -e "${GREEN}  http://localhost:8081${NC}"
 echo ""
 echo -e "${GREEN}  Login: mikhmon / 1234${NC}"
 echo ""

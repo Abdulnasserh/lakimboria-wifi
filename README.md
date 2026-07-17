@@ -53,7 +53,7 @@ curl -sSL https://raw.githubusercontent.com/Abdulnasserh/lakimboria-wifi/main/in
 
 ### Hatua ya 3: Ingia na Unganisha na Router (Login & Connect)
 
-1. Fungua kivinjari chako (Chrome, Edge, nk.) na nenda kwenye: **`http://localhost:8080`**
+1. Fungua kivinjari chako (Chrome, Edge, nk.) na nenda kwenye: **`http://localhost:8081`**
 2. Ingia kwa kutumia taarifa hizi:
    * **Username:** `mikhmon`
    * **Password:** `1234`

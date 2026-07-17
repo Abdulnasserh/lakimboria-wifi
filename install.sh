@@ -51,14 +51,14 @@ echo -e "${GREEN}  Downloaded to $DIR${NC}"
 # --- Start server ---
 echo -e "${YELLOW}[3] Starting server...${NC}"
 cd "$DIR/mikhmon"
-php -S 0.0.0.0:8080 > /tmp/lakimboria-server.log 2>&1 &
+php -S 0.0.0.0:8081 > /tmp/lakimboria-server.log 2>&1 &
 echo $! > /tmp/lakimboria.pid
 sleep 1
 
 echo ""
 echo -e "${CYAN}========================================${NC}"
 echo -e "${GREEN}  Lakimboria WiFi Manager is running!${NC}"
-echo -e "${GREEN}  Dashboard : http://localhost:8080${NC}"
+echo -e "${GREEN}  Dashboard : http://localhost:8081${NC}"
 echo -e "${GREEN}  Login     : mikhmon / 1234${NC}"
 echo -e "${GREEN}  Stop      : kill \$(cat /tmp/lakimboria.pid)${NC}"
 echo -e "${CYAN}========================================${NC}"
@@ -66,6 +66,6 @@ echo ""
 
 # Open browser
 sleep 1
-if command -v open &>/dev/null; then open http://localhost:8080
-elif command -v xdg-open &>/dev/null; then xdg-open http://localhost:8080
+if command -v open &>/dev/null; then open http://localhost:8081
+elif command -v xdg-open &>/dev/null; then xdg-open http://localhost:8081
 fi

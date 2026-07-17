@@ -68,19 +68,19 @@ echo [3] Starting Lakimboria server...
 echo.
 
 :: Start PHP built-in server
-start "Lakimboria Server" /B "%PHP_PATH%" -S 0.0.0.0:8080 -t "mikhmon"
+start "Lakimboria Server" /B "%PHP_PATH%" -S 0.0.0.0:8081 -t "mikhmon"
 
 :: Wait for server to start
 timeout /t 2 /nobreak >nul
 
 :: Open browser
 echo [4] Opening Lakimboria dashboard...
-start http://localhost:8080
+start http://localhost:8081
 
 echo.
 echo =========================================
 echo   Lakimboria WiFi Manager is running at:
-echo   http://localhost:8080
+echo   http://localhost:8081
 echo.
 echo   Login: mikhmon / 1234
 echo.

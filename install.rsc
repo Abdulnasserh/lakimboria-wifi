@@ -4,7 +4,7 @@
 
 :local GITHUB "https://raw.githubusercontent.com/Abdulnasserh/lakimboria-wifi/main"
 :local SERVERNAME "hotspot"
-:local LAKIMBORIAURL "http://192.168.1.100:8080"
+:local LAKIMBORIAURL "http://192.168.1.100:8081"
 
 :put "========================================="
 :put "  Lakimboria WiFi Manager Installer"
@@ -83,7 +83,7 @@
 :put ""
 :put "  WHAT TO DO NEXT:"
 :put "  1. On your PC: run setup-windows.bat or setup-macos.sh"
-:put "  2. Open http://localhost:8080 in browser"
+:put "  2. Open http://localhost:8081 in browser"
 :put "  3. Login with: mikhmon / 1234"
 :put "  4. Add this router in Settings"
 :put "========================================="

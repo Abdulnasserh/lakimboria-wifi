@@ -5,6 +5,6 @@ var config = {
   setCase : "none",
   defaultMode : "voucher",
   theme : "default",
-  url : "http://localhost:8080",
+  url : "http://localhost:8081",
   SessionName : "hotspot",
 }

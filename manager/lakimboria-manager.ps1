@@ -6,7 +6,7 @@ $basePath = Split-Path -Parent $scriptPath
 $mikhmonPath = Join-Path $basePath "mikhmon"
 $phpDir = Join-Path $basePath "php"
 $phpExe = if (Test-Path (Join-Path $phpDir "php.exe")) { Join-Path $phpDir "php.exe" } else { "php" }
-$serverPort = 8080
+$serverPort = 8081
 $global:process = $null
 
 $form = New-Object System.Windows.Forms.Form
