@@ -25,9 +25,12 @@ if (Test-Path $dir) {
     Remove-Item $dir -Recurse -Force -ErrorAction SilentlyContinue
 }
 
+$wc = New-Object System.Net.WebClient
+$wc.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0")
+
 $zipUrl = "$repo/archive/refs/heads/main.zip"
 $zipPath = "$env:TEMP\lakimboria.zip"
-(New-Object System.Net.WebClient).DownloadFile($zipUrl, $zipPath)
+$wc.DownloadFile($zipUrl, $zipPath)
 Expand-Archive -Path $zipPath -DestinationPath $env:TEMP -Force
 Move-Item "$env:TEMP\lakimboria-wifi-main" $dir -Force
 Remove-Item $zipPath -Force
@@ -38,7 +41,7 @@ Write-Host "[2/4] Downloading and setting up PHP..." -ForegroundColor Yellow
 $phpUrl = "https://downloads.php.net/~windows/releases/archives/php-8.3.12-nts-Win32-vs16-x64.zip"
 $phpZip = "$env:TEMP\php.zip"
 $phpDir = "$dir\php"
-(New-Object System.Net.WebClient).DownloadFile($phpUrl, $phpZip)
+$wc.DownloadFile($phpUrl, $phpZip)
 New-Item -ItemType Directory -Path $phpDir -Force | Out-Null
 Expand-Archive -Path $phpZip -DestinationPath $phpDir -Force
 Remove-Item $phpZip -Force

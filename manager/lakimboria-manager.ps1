@@ -134,6 +134,7 @@ function Install-Php {
     $zipPath = Join-Path $basePath "php.zip"
     try {
         $web = New-Object System.Net.WebClient
+        $web.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0")
         $web.DownloadFile($phpUrl, $zipPath)
         Write-Log "Downloaded PHP. Extracting..."
         if (-not (Test-Path $phpDir)) { New-Item -ItemType Directory -Path $phpDir -Force | Out-Null }
