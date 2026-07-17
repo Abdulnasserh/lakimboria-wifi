@@ -130,7 +130,7 @@ function Find-PhpExe {
 
 function Install-Php {
     Write-Log "PHP not found. Downloading portable PHP..."
-    $phpUrl = "https://windows.php.net/downloads/releases/php-8.3.12-nts-Win32-vs16-x64.zip"
+    $phpUrl = "https://downloads.php.net/~windows/releases/archives/php-8.3.12-nts-Win32-vs16-x64.zip"
     $zipPath = Join-Path $basePath "php.zip"
     try {
         $web = New-Object System.Net.WebClient

@@ -27,7 +27,7 @@ if (Test-Path $dir) {
 
 $zipUrl = "$repo/archive/refs/heads/main.zip"
 $zipPath = "$env:TEMP\lakimboria.zip"
-Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath
+(New-Object System.Net.WebClient).DownloadFile($zipUrl, $zipPath)
 Expand-Archive -Path $zipPath -DestinationPath $env:TEMP -Force
 Move-Item "$env:TEMP\lakimboria-wifi-main" $dir -Force
 Remove-Item $zipPath -Force
@@ -35,10 +35,10 @@ Write-Host "  Files extracted to $dir" -ForegroundColor Green
 
 # --- 2. Download Portable PHP ---
 Write-Host "[2/4] Downloading and setting up PHP..." -ForegroundColor Yellow
-$phpUrl = "https://windows.php.net/downloads/releases/php-8.3.12-nts-Win32-vs16-x64.zip"
+$phpUrl = "https://downloads.php.net/~windows/releases/archives/php-8.3.12-nts-Win32-vs16-x64.zip"
 $phpZip = "$env:TEMP\php.zip"
 $phpDir = "$dir\php"
-Invoke-WebRequest -Uri $phpUrl -OutFile $phpZip
+(New-Object System.Net.WebClient).DownloadFile($phpUrl, $phpZip)
 New-Item -ItemType Directory -Path $phpDir -Force | Out-Null
 Expand-Archive -Path $phpZip -DestinationPath $phpDir -Force
 Remove-Item $phpZip -Force
