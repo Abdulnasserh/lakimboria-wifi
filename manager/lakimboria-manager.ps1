@@ -13,13 +13,20 @@ $form = New-Object System.Windows.Forms.Form
 $form.Text = "Lakimboria WiFi Manager"
 $form.Size = New-Object System.Drawing.Size(500, 400)
 $form.StartPosition = "CenterScreen"
-$form.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon((Get-Command powershell).Source)
+
+# Safe Icon Loading - Prevent crashes on locked-down Windows systems
+try {
+    $form.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon((Get-Command powershell).Source)
+} catch {
+    # Fallback silently to no icon if loading fails
+}
+
 $form.FormBorderStyle = "FixedSingle"
 $form.MaximizeBox = $false
 
 # System Tray Icon Setup
 $notifyIcon = New-Object System.Windows.Forms.NotifyIcon
-$notifyIcon.Icon = $form.Icon
+if ($form.Icon) { $notifyIcon.Icon = $form.Icon }
 $notifyIcon.Text = "Lakimboria WiFi Manager"
 $notifyIcon.Visible = $false
 
@@ -257,10 +264,6 @@ $form.Add_Shown({
     Start-Server
     if ($global:process -and -not $global:process.HasExited) {
         Start-Process "http://localhost:$serverPort"
-        # Optional: Auto minimize to tray on startup
-        Start-Sleep -Seconds 1
-        $form.Hide()
-        $notifyIcon.Visible = $true
     }
 })
 
