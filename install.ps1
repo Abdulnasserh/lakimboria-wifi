@@ -52,16 +52,21 @@ Write-Host "[3/4] Compiling the Lakimboria Manager App (.exe)..." -ForegroundCol
 try {
     # Set TLS 1.2, set NuGet, and trust PSGallery to prevent any interactive prompt hangs
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -ErrorAction SilentlyContinue | Out-Null
-    Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted -ErrorAction SilentlyContinue | Out-Null
+    
+    Write-Host "  Checking secure package manager (NuGet)..." -ForegroundColor DarkGray
+    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -ErrorAction SilentlyContinue
+    
+    Write-Host "  Configuring trusted repository (PSGallery)..." -ForegroundColor DarkGray
+    Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted -ErrorAction SilentlyContinue
 
     # Install ps2exe if not available
     if (-not (Get-Module -ListAvailable -Name ps2exe)) {
-        Write-Host "  Installing PS2EXE compiler module (takes a moment)..." -ForegroundColor DarkGray
-        Install-Module -Name ps2exe -Force -Scope CurrentUser -AllowClobber -Confirm:$false | Out-Null
+        Write-Host "  Installing PS2EXE compiler module (takes 1-2 minutes depending on your speed)..." -ForegroundColor DarkGray
+        Install-Module -Name ps2exe -Force -Scope CurrentUser -AllowClobber -Confirm:$false
     }
     
     # Run the compilation
+    Write-Host "  Compiling script to standalone .exe..." -ForegroundColor DarkGray
     ps2exe -inputFile "$dir\manager\lakimboria-manager.ps1" `
            -outputFile "$dir\LakimboriaWiFiManager.exe" `
            -iconFile "$dir\manager\icon.ico" `
@@ -69,7 +74,7 @@ try {
            -description "Lakimboria WiFi Manager — MikroTik Hotspot Launcher" `
            -company "Deeplearn Technologies" `
            -product "Lakimboria WiFi Manager" `
-           -version "1.0.0.0" | Out-Null
+           -version "1.0.0.0"
            
     Write-Host "  Successfully compiled LakimboriaWiFiManager.exe!" -ForegroundColor Green
 } catch {
