@@ -13,13 +13,16 @@ echo  Double-click to start/stop the server easily.
 echo =========================================
 echo.
 
+:: Save the current directory
+set "BASEDIR=%~dp0"
+
 :: Check if PHP is installed
 where php >nul 2>nul
 if %ERRORLEVEL% NEQ 0 (
     echo [1] PHP not found. Downloading portable PHP...
     echo.
-    if not exist "php" mkdir php
-    cd php
+    if not exist "%BASEDIR%php" mkdir "%BASEDIR%php"
+    pushd "%BASEDIR%php"
     
     :: Download PHP 8.3 portable ZIP
     echo   Downloading PHP 8.3 (Windows x64)...
@@ -32,19 +35,20 @@ if %ERRORLEVEL% NEQ 0 (
     ) else (
         echo   Download failed! Please install PHP manually from https://windows.php.net
         echo   Then re-run this script.
+        popd
         pause
         exit /b 1
     )
-    cd ..
+    popd
 )
 
 :: Find PHP executable path
 set PHP_PATH=
-if exist "php\php.exe" set PHP_PATH=php\php.exe
+if exist "%BASEDIR%php\php.exe" set "PHP_PATH=%BASEDIR%php\php.exe"
 if "%PHP_PATH%"=="" (
     where php >nul 2>nul
     if %ERRORLEVEL% EQU 0 (
-        for /f "delims=" %%i in ('where php') do set PHP_PATH=%%i
+        for /f "delims=" %%i in ('where php') do set "PHP_PATH=%%i"
     )
 )
 
@@ -58,8 +62,8 @@ echo [2] PHP found at: %PHP_PATH%
 echo.
 
 :: Check if Lakimboria files exist
-if not exist "mikhmon\admin.php" (
-    echo [3] Lakimboria not found. This script must be in the mikhmon-tz folder.
+if not exist "%BASEDIR%mikhmon\admin.php" (
+    echo [3] Lakimboria not found. This script must be in the lakimboria-wifi folder.
     pause
     exit /b 1
 )
@@ -67,8 +71,8 @@ if not exist "mikhmon\admin.php" (
 echo [3] Starting Lakimboria server...
 echo.
 
-:: Start PHP built-in server
-start "Lakimboria Server" /B "%PHP_PATH%" -S 0.0.0.0:8081 -t "mikhmon"
+:: Start PHP built-in server (in a visible window so we can kill it by title)
+start "Lakimboria Server" "%PHP_PATH%" -S 0.0.0.0:8081 -t "%BASEDIR%mikhmon"
 
 :: Wait for server to start
 timeout /t 2 /nobreak >nul
@@ -84,10 +88,15 @@ echo   http://localhost:8081
 echo.
 echo   Login: mikhmon / 1234
 echo.
-echo   Close this window to stop the server.
+echo   Press any key to STOP the server.
 echo =========================================
 echo.
 
-:: Keep window open
+:: Keep window open until user presses a key
 pause
+
+:: Kill the PHP server by window title (works because we used start with a title, no /B)
 taskkill /fi "WINDOWTITLE eq Lakimboria Server" >nul 2>nul
+:: Fallback: kill php.exe if the above didn't work
+taskkill /im php.exe /f >nul 2>nul
+echo   Server stopped.

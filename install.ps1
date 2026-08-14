@@ -38,7 +38,7 @@ Write-Host "  Files extracted to $dir" -ForegroundColor Green
 
 # --- 2. Download Portable PHP ---
 Write-Host "[2/4] Downloading and setting up PHP..." -ForegroundColor Yellow
-$phpUrl = "https://downloads.php.net/~windows/releases/archives/php-8.3.12-nts-Win32-vs16-x64.zip"
+$phpUrl = "https://windows.php.net/downloads/releases/php-8.3.12-nts-Win32-vs16-x64.zip"
 $phpZip = "$env:TEMP\php.zip"
 $phpDir = "$dir\php"
 $wc.DownloadFile($phpUrl, $phpZip)
