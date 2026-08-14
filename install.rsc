@@ -22,16 +22,11 @@
 /ip service set api-ssl disabled=no
 :put "  API enabled on port 8728"
 
-# ---- 2. Create directory structure ----
-:put "[2] Creating directory structure..."
-# RouterOS doesn't have a mkdir command, so we create dummy files to force folder creation
-/file print file="hotspot/css/dummy"
-/file print file="hotspot/img/dummy"
-/file print file="hotspot/xml/dummy"
-:delay 2s
-
-# ---- 3. Download captive portal files ----
-:put "[3] Downloading captive portal files..."
+# ---- 2. Download captive portal files ----
+# Note: RouterOS has no mkdir command. The /tool fetch dst-path below will
+# automatically create the required folders (hotspot/ css/ img/ xml/) when
+# the first file is downloaded. This works on RouterOS 6.x AND 7.x.
+:put "[2] Downloading captive portal files..."
 
 # Download each hotspot file individually for RouterOS 6.x and 7.x compatibility
 :put "  Downloading login.html..."
@@ -71,22 +66,17 @@
 /tool fetch url=($GITHUB . "/hotspot/img/password.svg") dst-path="hotspot/img/password.svg"
 /tool fetch url=($GITHUB . "/hotspot/img/voucher.svg") dst-path="hotspot/img/voucher.svg"
 
-# Clean up dummy files
-/file remove "hotspot/css/dummy.txt"
-/file remove "hotspot/img/dummy.txt"
-/file remove "hotspot/xml/dummy.txt"
-
-# ---- 4. Configure hotspot profile ----
-:put "[4] Applying captive portal to all hotspot profiles..."
+# ---- 3. Configure hotspot profile ----
+:put "[3] Applying captive portal to all hotspot profiles..."
 /ip hotspot profile set [find] html-directory=hotspot
 :put "  All Hotspot profiles updated to use Lakimboria pages."
 
-# ---- 5. Update conf.js with Lakimboria URL ----
-:put "[5] Setting Lakimboria Server URL in conf.js..."
+# ---- 4. Update conf.js with Lakimboria URL ----
+:put "[4] Setting Lakimboria Server URL in conf.js..."
 :local CONFJS ("var config = {\r\n  loginvc : \"Weka Kodi ya Vocha kisha bonyeza Unganisha.\",\r\n  loginup : \"Weka Jina la Mtumiaji na Nywila kisha bonyeza Unganisha.\",\r\n  voucherCode : \"Kodi ya Vocha\",\r\n  setCase : \"none\",\r\n  defaultMode : \"voucher\",\r\n  theme : \"default\",\r\n  url : \"" . $LAKIMBORIAURL . "\",\r\n  SessionName : \"" . $SERVERNAME . "\",\r\n}\r\n")
 /file set "hotspot/conf.js" contents=$CONFJS
 
-# ---- 6. Display summary ----
+# ---- 5. Display summary ----
 :put ""
 :put "========================================="
 :put "  INSTALLATION COMPLETE!"
