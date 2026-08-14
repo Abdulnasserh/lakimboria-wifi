@@ -77,6 +77,14 @@ start "Lakimboria Server" "%PHP_PATH%" -S 0.0.0.0:8081 -t "%BASEDIR%mikhmon"
 :: Wait for server to start
 timeout /t 2 /nobreak >nul
 
+:: Auto-detect local IP address
+set LOCAL_IP=
+for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /c:"IPv4"') do (
+    if not defined LOCAL_IP set "LOCAL_IP=%%a"
+)
+:: Trim leading space
+for /f "tokens=* delims= " %%b in ("%LOCAL_IP%") do set "LOCAL_IP=%%b"
+
 :: Open browser
 echo [4] Opening Lakimboria dashboard...
 start http://localhost:8081
@@ -87,6 +95,13 @@ echo   Lakimboria WiFi Manager is running at:
 echo   http://localhost:8081
 echo.
 echo   Login: mikhmon / 1234
+echo.
+echo   -----------------------------------------
+echo   YOUR PC IP: %LOCAL_IP%
+echo   -----------------------------------------
+echo   On MikroTik, set Lakimboria URL to:
+echo   http://%LOCAL_IP%:8081
+echo   -----------------------------------------
 echo.
 echo   Press any key to STOP the server.
 echo =========================================

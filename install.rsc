@@ -5,6 +5,7 @@
 # IMPORTANT: Before running, change LAKIMBORIAURL below to match
 # the static IP address of your Windows PC running the manager.
 # Example: If your PC IP is 192.168.88.200, set it to http://192.168.88.200:8081
+# NOTE: If you used install.ps1 on Windows, this file is auto-configured with your IP.
 
 :local GITHUB "https://raw.githubusercontent.com/Abdulnasserh/lakimboria-wifi/main"
 :local SERVERNAME "hotspot"

@@ -105,16 +105,97 @@ $shortcut.IconLocation = "$dir\manager\icon.ico"
 $shortcut.Save()
 Write-Host "  Desktop Shortcut created: 'Lakimboria WiFi Manager'" -ForegroundColor Green
 
+# --- 5. Auto-detect PC IP and generate ready-to-paste MikroTik command ---
+Write-Host "[5/5] Detecting your PC's local IP address..." -ForegroundColor Yellow
+
+# Get the best local IPv4 address (prefer 192.168.x.x or 10.x.x.x, skip loopback/APIPA)
+$localIP = $null
+try {
+    # Method 1: Get IP by checking route to an external address (most reliable)
+    $localIP = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object {
+        $_.IPAddress -notlike "127.*" -and 
+        $_.IPAddress -notlike "169.254.*" -and 
+        $_.PrefixOrigin -ne "WellKnown"
+    } | Sort-Object -Property { 
+        if ($_.IPAddress -like "192.168.*") { 0 } 
+        elseif ($_.IPAddress -like "10.*") { 1 } 
+        else { 2 } 
+    } | Select-Object -First 1).IPAddress
+} catch {}
+
+if (-not $localIP) {
+    # Fallback: parse ipconfig
+    $localIP = (ipconfig | Select-String "IPv4" | Select-Object -First 1).ToString().Split(":")[-1].Trim()
+}
+
+if ($localIP) {
+    Write-Host "  Detected IP: $localIP" -ForegroundColor Green
+    
+    # Update install.rsc with the correct IP
+    $rscPath = "$dir\install.rsc"
+    if (Test-Path $rscPath) {
+        $rscContent = Get-Content $rscPath -Raw
+        $rscContent = $rscContent -replace 'LAKIMBORIAURL "http://[^"]*"', "LAKIMBORIAURL `"http://${localIP}:8081`""
+        Set-Content -Path $rscPath -Value $rscContent -NoNewline
+        Write-Host "  Updated install.rsc with your IP ($localIP)" -ForegroundColor Green
+    }
+} else {
+    $localIP = "YOUR_PC_IP"
+    Write-Host "  Could not auto-detect IP. You'll need to edit install.rsc manually." -ForegroundColor Red
+}
+
+# Generate the one-liner MikroTik command
+$mikroTikCmd = "/tool fetch url=`"https://raw.githubusercontent.com/Abdulnasserh/lakimboria-wifi/main/install.rsc`" dst-path=install.rsc; /import install.rsc"
+
+# Also generate a local version with correct IP that can be pasted directly
+$localRscCmd = @"
+:local GITHUB "https://raw.githubusercontent.com/Abdulnasserh/lakimboria-wifi/main"
+:local SERVERNAME "hotspot"
+:local LAKIMBORIAURL "http://${localIP}:8081"
+"@
+
+# Save a ready-to-paste command file on Desktop
+$cmdFile = "$desktop\MikroTik-Paste-This.txt"
+$cmdFileContent = @"
+============================================
+  PASTE THIS INTO YOUR MIKROTIK TERMINAL
+  (WinBox > New Terminal, or SSH)
+============================================
+
+OPTION A: One-line auto-install (fetches from GitHub):
+------------------------------------------------------
+/tool fetch url="https://raw.githubusercontent.com/Abdulnasserh/lakimboria-wifi/main/install.rsc" dst-path=install.rsc; /import install.rsc
+
+NOTE: After running Option A, you must update the URL in the router:
+/file set "hotspot/conf.js" contents="var config = {\r\n  loginvc : \"Weka Kodi ya Vocha kisha bonyeza Unganisha.\",\r\n  loginup : \"Weka Jina la Mtumiaji na Nywila kisha bonyeza Unganisha.\",\r\n  voucherCode : \"Kodi ya Vocha\",\r\n  setCase : \"none\",\r\n  defaultMode : \"voucher\",\r\n  theme : \"default\",\r\n  url : \"http://${localIP}:8081\",\r\n  SessionName : \"hotspot\",\r\n}\r\n"
+
+
+OPTION B: Use the local install.rsc file (already has your IP):
+---------------------------------------------------------------
+1. Open WinBox > Files
+2. Drag & drop the file: $dir\install.rsc
+3. Then in Terminal run: /import install.rsc
+
+
+Your PC IP: $localIP
+Server will run at: http://${localIP}:8081
+============================================
+"@
+Set-Content -Path $cmdFile -Value $cmdFileContent
+Write-Host "  Saved MikroTik command to: $cmdFile" -ForegroundColor Green
+
 # --- Done ---
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "  INSTALLATION COMPLETED SUCCESSFULLY!" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "  Folder: $dir" -ForegroundColor Gray
+Write-Host "  Your PC IP: $localIP" -ForegroundColor White
 Write-Host ""
-Write-Host "  WHAT TO DO NEXT:"
-Write-Host "  1. Double-click the 'Lakimboria WiFi Manager' icon on your Desktop!"
-Write-Host "  2. It will automatically start the server and open your browser."
-Write-Host "  3. Paste the install.rsc command into your MikroTik terminal."
+Write-Host "  WHAT TO DO NEXT:" -ForegroundColor White
+Write-Host "  1. Double-click 'Lakimboria WiFi Manager' on your Desktop to start the server." -ForegroundColor White
+Write-Host "  2. Open 'MikroTik-Paste-This.txt' on your Desktop." -ForegroundColor White
+Write-Host "  3. Copy the command and paste it into MikroTik Terminal (WinBox)." -ForegroundColor White
+Write-Host "  4. Done! Your hotspot is ready." -ForegroundColor White
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
