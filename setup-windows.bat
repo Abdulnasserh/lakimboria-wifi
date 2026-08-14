@@ -26,7 +26,7 @@ if %ERRORLEVEL% NEQ 0 (
     
     :: Download PHP 8.3 portable ZIP
     echo   Downloading PHP 8.3 (Windows x64)...
-    curl -L -o php.zip "https://windows.php.net/downloads/releases/php-8.3.12-nts-Win32-vs16-x64.zip"
+    curl -L -o php.zip "https://downloads.php.net/~windows/releases/archives/php-8.3.12-nts-Win32-vs16-x64.zip"
     if exist php.zip (
         echo   Extracting...
         powershell -Command "Expand-Archive -Path php.zip -DestinationPath . -Force"
