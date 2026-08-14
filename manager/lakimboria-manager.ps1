@@ -137,12 +137,24 @@ function Find-PhpExe {
 
 function Install-Php {
     Write-Log "PHP not found. Downloading portable PHP..."
-    $phpUrl = "https://downloads.php.net/~windows/releases/archives/php-8.3.12-nts-Win32-vs16-x64.zip"
+    try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 + [Net.SecurityProtocolType]::Tls13 } catch {}
     $zipPath = Join-Path $basePath "php.zip"
+    $sources = @(
+        "https://downloads.php.net/~windows/releases/archives/php-8.3.12-nts-Win32-vs16-x64.zip",
+        "https://windows.php.net/downloads/releases/archives/php-8.3.12-nts-Win32-vs16-x64.zip"
+    )
     try {
-        $web = New-Object System.Net.WebClient
-        $web.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0")
-        $web.DownloadFile($phpUrl, $zipPath)
+        $ProgressPreference = 'SilentlyContinue'
+        foreach ($u in $sources) {
+            try {
+                Write-Log "Downloading from $u"
+                Invoke-WebRequest -Uri $u -OutFile $zipPath -UseBasicParsing -ErrorAction Stop
+                if ((Get-Item $zipPath).Length -gt 100000) { break }
+            } catch {
+                Write-Log "Source failed: $_"
+            }
+        }
+        if (-not (Test-Path $zipPath)) { throw "No source worked" }
         Write-Log "Downloaded PHP. Extracting..."
         if (-not (Test-Path $phpDir)) { New-Item -ItemType Directory -Path $phpDir -Force | Out-Null }
         Expand-Archive -Path $zipPath -DestinationPath $phpDir -Force

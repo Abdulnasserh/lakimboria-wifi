@@ -25,12 +25,33 @@ if (Test-Path $dir) {
     Remove-Item $dir -Recurse -Force -ErrorAction SilentlyContinue
 }
 
-$wc = New-Object System.Net.WebClient
-$wc.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0")
+# Force TLS 1.2+ for older Windows PowerShell 5.1 (fixes many download failures)
+try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 + [Net.SecurityProtocolType]::Tls13 } catch {}
+
+function Download-WithFallback {
+    param([string]$Url, [string[]]$Fallbacks, [string]$OutPath, [string]$Label)
+    foreach ($u in @($Url) + $Fallbacks) {
+        try {
+            Write-Host "  Trying: $u" -ForegroundColor DarkGray
+            $ProgressPreference = 'SilentlyContinue'
+            Invoke-WebRequest -Uri $u -OutFile $OutPath -UseBasicParsing -Headers @{ "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) like Gecko" } -ErrorAction Stop
+            if ((Get-Item $OutPath).Length -gt 100000) {
+                Write-Host "  OK ($Label) - $((Get-Item $OutPath).Length) bytes" -ForegroundColor Green
+                return $true
+            }
+            Write-Host "  Downloaded file too small, trying next source..." -ForegroundColor Yellow
+        } catch {
+            Write-Host "  Failed: $($_.Exception.Message)" -ForegroundColor Yellow
+        }
+    }
+    return $false
+}
 
 $zipUrl = "$repo/archive/refs/heads/main.zip"
 $zipPath = "$env:TEMP\lakimboria.zip"
-$wc.DownloadFile($zipUrl, $zipPath)
+if (-not (Download-WithFallback -Url $zipUrl -OutPath $zipPath -Label "repository")) {
+    throw "Could not download the repository. Check your internet connection/firewall."
+}
 Expand-Archive -Path $zipPath -DestinationPath $env:TEMP -Force
 Move-Item "$env:TEMP\lakimboria-wifi-main" $dir -Force
 Remove-Item $zipPath -Force
@@ -38,10 +59,16 @@ Write-Host "  Files extracted to $dir" -ForegroundColor Green
 
 # --- 2. Download Portable PHP ---
 Write-Host "[2/4] Downloading and setting up PHP..." -ForegroundColor Yellow
-$phpUrl = "https://downloads.php.net/~windows/releases/archives/php-8.3.12-nts-Win32-vs16-x64.zip"
 $phpZip = "$env:TEMP\php.zip"
 $phpDir = "$dir\php"
-$wc.DownloadFile($phpUrl, $phpZip)
+# Multiple sources: primary extra mirror, then official downloads server
+$phpSources = @(
+    "https://downloads.php.net/~windows/releases/archives/php-8.3.12-nts-Win32-vs16-x64.zip",
+    "https://windows.php.net/downloads/releases/archives/php-8.3.12-nts-Win32-vs16-x64.zip"
+)
+if (-not ($downloaded = Download-WithFallback -Url $phpSources[0] -Fallbacks $phpSources[1] -OutPath $phpZip -Label "PHP")) {
+    throw "Could not download PHP. Step 2 failed. Please download PHP 8.3 x64 NTS manually from https://windows.php.net and place it in $dir"
+}
 New-Item -ItemType Directory -Path $phpDir -Force | Out-Null
 Expand-Archive -Path $phpZip -DestinationPath $phpDir -Force
 Remove-Item $phpZip -Force
